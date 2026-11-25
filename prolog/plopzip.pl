@@ -6,7 +6,7 @@
 % Column formulas: const(C), k(A, B) meaning (A*K + B) mod 10.
 %?- compress([[1,0],[1,1],[1,2]], Z).            % Z = zip(3, [const(1), k(1, 0)], [])
 %?- decompress(zip(3, [const(1), k(1, 0)], []), T).
-%?- size([[1,0],[1,1],[1,2]], S), compress([[1,0],[1,1],[1,2]], Z), zsize(Z, ZS).
+%?- size([[1,0],[1,1],[1,2]], S), compress([[1,0],[1,1],[1,2]], Z), zsize(Z, ZS).   % S = 6, ZS = 4
 :- module(plopzip, [col_value/3, compress/2, decompress/2, size/2, zsize/2]).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
@@ -32,4 +32,6 @@ decompress(zip(N, Fs, Ex), T) :- ( N =:= 0 -> T = [] ; Top is N - 1, numlist(0, 
     maplist([K, Rec]>>( length(Fs, W), ( W =:= 0 -> Rec = [] ; Wt is W - 1, numlist(0, Wt, Is), maplist([I, V]>>( memberchk(cell(K, I, V0), Ex) -> V = V0 ; nth0(I, Fs, F), col_value(F, K, V) ), Is, Rec) ) ), Ks, T) ).
 
 size(T, S) :- foldl([R, A, B]>>( length(R, L), B is A + L ), T, 0, S).
-zsize(zip(_, Fs, Ex), S) :- length(Fs, A), length(Ex, B), S is 1 + A + 2 * B.
+% zsize counts every number stored: one for the record count, one for const(C), two for k(A, B), and three
+% for each exception cell(Row, Column, Value), so it can be compared with size/2, which counts cells.
+zsize(zip(_, Fs, Ex), S) :- foldl([F, A0, A]>>( F = k(_, _) -> A is A0 + 2 ; A is A0 + 1 ), Fs, 0, NF), length(Ex, B), S is 1 + NF + 3 * B.
