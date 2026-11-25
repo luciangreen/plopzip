@@ -22,3 +22,9 @@ theorem(exceptions_are_minimal_and_right) :- forall(( table(T), compress(T, zip(
 
 % 4. compress is a function.
 theorem(compress_is_a_function) :- forall(table(T), findall(Z, compress(T, Z), [_])).
+
+% 5. The size counts every number stored: the table can be rebuilt from exactly zsize numbers, so a table
+% compresses (zsize below size) only when its formulas pay for themselves.
+theorem(size_counts_every_number) :- forall(table(T), ( compress(T, Z), Z = zip(_, Fs, Ex), zsize(Z, S),
+    numbers_in(Fs, NF), length(Ex, NE), S =:= 1 + NF + 3 * NE )).
+numbers_in(Fs, N) :- foldl([F, A, B]>>( F =.. [_|Xs], length(Xs, L), B is A + L ), Fs, 0, N).
